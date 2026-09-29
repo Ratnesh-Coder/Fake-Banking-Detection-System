@@ -52,44 +52,60 @@ The first model uses cryptographic hashing to verify the integrity of the initia
 ### Verification Flow
 
 ```text
-                    Client
-                      │
-                      │
-                      ▼
-                    H1.py
-                      │
-                 SHA-256(H1)
-                      │
-                      ▼
-                Hash of H1 (I')
-                      │
-                      │
-                      ▼
-                    Server
-                      │
-              Compare with stored I
-                      │
-                ┌─────┴─────┐
-                │           │
-              Match       Mismatch
-                │           │
-                ▼           ▼
-          Generate J      Reject
+                         CLIENT
+                           │
+                           │
+                           ▼
+                         H1.py
+                           │
+                      SHA-256(H1)
+                           │
+                           ▼
+                     Hash of H1 (I')
+                           │
+                           │
+                           ▼
+                         SERVER
+                           │
+                  Compare I' with I
+                           │
+                     ┌─────┴─────┐
+                     │           │
+                   Match      Mismatch
+                     │           │
+                     ▼           ▼
+                Generate J     Reject
+                     │
+                     ▼
+               Send H2 + J
+                     │
+                     ▼
+                  CLIENT
+                     │
+                  SHA-256(H2)
+                     │
+                     ▼
+                    J'
+                     │
+              Compare J' with J
+                     │
+                ┌────┴────┐
+                │         │
+              Match    Mismatch
+                │         │
+                ▼         ▼
+         Generate KEY    Reject
                 │
                 ▼
-        Download H2 + J
+        Verify Signature
                 │
-                ▼
-          Hash H2 → J'
-                │
-          Compare J' == J
-                │
-          ┌─────┴─────┐
-          │           │
-        Match       Mismatch
-          │           │
-          ▼           ▼
-       Execute       Reject
+           ┌────┴────┐
+           │         │
+         Valid     Invalid
+           │         │
+           ▼         ▼
+      Application   Reject
+       Activated
 ```
 
 ---
@@ -101,51 +117,101 @@ Model 2 extends the first model by adding a **nonce-based challenge-response mec
 ### Verification Flow
 
 ```text
-Client
-  │
-  │ 1. Calculate H1 hash
-  ▼
-Server
-  │
-  │ 2. Verify H1
-  ▼
-Server generates NONCE
-  │
-  ▼
-Client
-  │
-  │ 3. Calculate:
-  │
-  │ RESPONSE = SHA256(H1 || NONCE)
-  │
-  ▼
-Server
-  │
-  │ 4. Verify RESPONSE
-  ▼
-H1 Verification Successful
-  │
-  ▼
-Download H2 + H2 Hash
-  │
-  ▼
-Client
-  │
-  │ 5. Calculate H2 hash
-  ▼
-Compare hashes
-  │
-  ▼
-H2 Verification Successful
-  │
-  ▼
-Generate verification key
-  │
-  ▼
-RSA Signature Verification
-  │
-  ▼
-Final Application Component
+                         CLIENT
+                           │
+                           │
+                           ▼
+                    Request NONCE
+                           │
+                           ▼
+                         SERVER
+                           │
+                    Generate NONCE
+                           │
+                           ▼
+                      Send NONCE
+                           │
+                           ▼
+                         CLIENT
+                           │
+                      H1 + NONCE
+                           │
+                      SHA-256(...)
+                           │
+                           ▼
+                       RESPONSE
+                           │
+                           │
+                           ▼
+                         SERVER
+                           │
+                  Verify RESPONSE
+                           │
+                     ┌─────┴─────┐
+                     │           │
+                   Valid       Invalid
+                     │           │
+                     ▼           ▼
+                Send H2 + J     Reject
+                     │
+                     ▼
+                    CLIENT
+                     │
+                  SHA-256(H2)
+                     │
+                     ▼
+                    J'
+                     │
+              Compare J' with J
+                     │
+                ┌────┴────┐
+                │         │
+              Match    Mismatch
+                │         │
+                ▼         ▼
+              Valid      Reject
+                │
+                ▼
+               SERVER
+                │
+          Generate KEY using
+       HMAC(Server_Secret, I' || J)
+                │
+                ▼
+             Send KEY
+                │
+                ▼
+              CLIENT
+                │
+        Load APK Signature
+                │
+                ▼
+       Verify RSA Signature
+                │
+           ┌────┴────┐
+           │         │
+         Valid     Invalid
+           │         │
+           ▼         ▼
+        Merge H1    Reject
+          + H2
+           │
+           ▼
+      Final Application
+           │
+           ▼
+     Activate Banking
+        Features
+           │
+           ▼
+     Session Management
+           │
+       ┌───┴────┐
+       │        │
+     Valid    Expired
+       │        │
+       ▼        ▼
+   Continue   Terminate
 ```
 
 ---
