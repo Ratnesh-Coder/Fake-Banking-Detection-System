@@ -415,59 +415,6 @@ streamlit run streamlit_app.py
 
 ---
 
-# 🔄 Complete Verification Concept
-
-The overall security concept can be summarized as:
-
-```text
-                  APPLICATION
-                       │
-                       ▼
-                      H1
-                       │
-                  Hash H1
-                       │
-                       ▼
-                    Server
-                       │
-                H1 Verification
-                       │
-                       ▼
-                     NONCE
-                       │
-                       ▼
-                   Challenge
-                       │
-                       ▼
-              Client Response
-                       │
-                       ▼
-                Server Verification
-                       │
-                       ▼
-                    H2 + Hash
-                       │
-                       ▼
-                 Hash H2
-                       │
-                       ▼
-              H2 Verification
-                       │
-                       ▼
-             Cryptographic Key
-                       │
-                       ▼
-               RSA Signature
-                       │
-                       ▼
-              Signature Verification
-                       │
-                       ▼
-             Final Application
-```
-
----
-
 # 🎯 Project Objective
 
 The main objective of this project is to demonstrate how cryptographic integrity checks and client-server verification can be combined to detect modified or unauthorized application components.
